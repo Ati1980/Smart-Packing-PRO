@@ -6,11 +6,13 @@ export interface Machine {
 
 export interface InspectionRecord {
   id: string;
+  recordType?: 'sealTemp' | 'oee';
   machine: string;
   datetime: string;
   shift: string;
   shiftType: string;
   operator: string;
+  reportDate?: string;
   speed: number;
   tempFront: number | null;
   tempFrontMin: number | null;

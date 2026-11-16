@@ -1,6 +1,6 @@
 {
-  "name": "OEE Packing Pro",
-  "description": "OEE Performance, Machine Speed & Temperature Quality Inspection System for Packaging Department",
+  "name": "Smart Packing PRO",
+  "description": "Sugar Packaging Machine Controller & OEE Performance & Quality Inspection System",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
