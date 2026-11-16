@@ -329,6 +329,52 @@ export default function App() {
   const filmCameraInputRef = useRef<HTMLInputElement | null>(null);
   const filmGalleryInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [showCameraModal, setShowCameraModal] = useState<boolean>(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  const startCamera = async () => {
+    setShowCameraModal(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      mediaStreamRef.current = stream;
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 100);
+    } catch (err) {
+      console.warn("getUserMedia failed, falling back to file input capture:", err);
+      setShowCameraModal(false);
+      filmCameraInputRef.current?.click();
+    }
+  };
+
+  const stopCamera = () => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    setShowCameraModal(false);
+  };
+
+  const captureSnapshot = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setFilmTagPhoto(dataUrl);
+        showToast('ถ่ายภาพป้าย Tag สำเร็จ ✔');
+      }
+    }
+    stopCamera();
+  };
+
   const handleFilmPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -2043,7 +2089,7 @@ export default function App() {
                     <div className="grid grid-cols-2 gap-2.5 flex-1">
                       <button
                         type="button"
-                        onClick={() => filmCameraInputRef.current?.click()}
+                        onClick={startCamera}
                         className="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.98]"
                       >
                         <Camera className="w-4 h-4 shrink-0" />
@@ -2074,6 +2120,51 @@ export default function App() {
                     )}
                   </div>
                 </div>
+
+                {/* Live Camera Modal */}
+                {showCameraModal && (
+                  <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl overflow-hidden max-w-lg w-full shadow-2xl flex flex-col border border-slate-200">
+                      <div className="bg-purple-900 text-white p-4 flex items-center justify-between">
+                        <h3 className="text-sm font-black flex items-center gap-2">
+                          <Camera className="w-5 h-5 text-purple-300" /> ถ่ายภาพป้าย Tag ม้วนฟิล์ม
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={stopCamera}
+                          className="text-white hover:text-rose-300 text-lg font-bold w-8 h-8 rounded-full flex items-center justify-center bg-white/10"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="relative bg-black aspect-video flex items-center justify-center overflow-hidden">
+                        <video
+                          ref={videoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4 bg-slate-50 flex items-center justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={captureSnapshot}
+                          className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-sm shadow-xl flex items-center gap-2"
+                        >
+                          <Camera className="w-5 h-5" /> 📸 กดถ่ายภาพ
+                        </button>
+                        <button
+                          type="button"
+                          onClick={stopCamera}
+                          className="px-4 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm"
+                        >
+                          ยกเลิก
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
 
 
