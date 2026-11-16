@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: '/Smart-Packing-PRO/', // <-- เพิ่มบรรทัดนี้ให้ตรงกับชื่อ Repo บน GitHub
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
